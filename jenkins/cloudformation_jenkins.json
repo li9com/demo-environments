@@ -12,7 +12,7 @@
         "Type": "String",
         "MinLength": "3",
         "MaxLength": "12",
-        "Default": "gitlab",
+        "Default": "jenkins",
         "AllowedPattern" : "^[a-z][a-z0-9]{2,11}$",
         "ConstraintDescription": "^[a-z][a-z0-9]{2,11}$"
     }
@@ -21,19 +21,17 @@
 
 "Resources": {
 
-    "GitLabServer": {
-        "Type": "AWS::EC2::Instance",
-        "Properties": {
-          "InstanceType": "t2.medium",
-          "Tags": [ {
-            "Key": "Name",
-            "Value": { "Fn::Join": [ ".", [ { "Ref": "Name" }, "demo.li9.com"  ]] }
-          } ],
+    "JenkinsServer": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "InstanceType": "t3.large",
+        "Tags": [ {
+          "Key": "Name",
+          "Value": { "Fn::Join": [ ".", [ { "Ref": "Name" }, "demo.li9.com"  ]] }
+        } ],
         "NetworkInterfaces": [
           {
-            "GroupSet": [
-              "sg-e2dd7699"
-            ],
+            "GroupSet": [ "sg-e2dd7699" ],
             "AssociatePublicIpAddress": "true",
             "DeviceIndex": 0,
             "DeleteOnTermination": "true",
@@ -44,12 +42,17 @@
         "ImageId": "ami-9887c6e7",
 
         "UserData": { "Fn::Base64" : { "Fn::Join" : ["\n", [
-             "#!/bin/bash",
-             "yum -y install git"
-	 ]]}}
+          "#!/bin/bash",
+          "yum install -y epel-release git",
+          "yum install -y  java-1.8.0-openjdk",
+          "curl -o /etc/yum.repos.d/jenkins.repo http://pkg.jenkins-ci.org/redhat/jenkins.repo",
+          "rpm --import https://jenkins-ci.org/redhat/jenkins-ci.org.key",
+          "yum install -y jenkins",
+          "systemctl enable jenkins",
+          "systemctl start jenkins"
+	      ]]}}
 
-
-      }
+        }
     },
 
     "DNSZone" : {
@@ -60,10 +63,9 @@
       		"Name" :  { "Fn::Join": [ ".", [ { "Ref": "Name" }, "demo.li9.com"  ]] },
       		"Type" : "A",
       		"TTL" : "900",
-		"ResourceRecords" : [ { "Fn::GetAtt" : [ "GitLabServer", "PublicIp" ] } ]
+		"ResourceRecords" : [ { "Fn::GetAtt" : [ "JenkinsServer", "PublicIp" ] } ]
     	}
     }
 
 }
 }
-
