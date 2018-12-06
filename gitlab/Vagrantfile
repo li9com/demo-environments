@@ -1,0 +1,33 @@
+# Start of Vagranfile
+
+
+Vagrant.configure(2) do |config|
+
+  config.vm.define "gitlab" do |conf|
+    conf.vm.box = "centos/7"
+    conf.vm.hostname = 'gitlab.172.24.0.11.nip.io'
+    conf.vm.network "private_network", ip: "172.24.0.11"
+    conf.vm.provider "virtualbox" do |v|
+      v.memory = 2048
+      v.cpus = 2
+    end
+    conf.vm.provision "shell", inline: $inline_script
+    conf.vm.provision "shell", inline: $gitlab
+  end
+
+end
+
+$inline_script = <<SCRIPT
+cat <<EOF > /etc/hosts
+127.0.0.1   localhost localhost.localdomain
+EOF
+SCRIPT
+
+$gitlab =  <<EOF
+curl https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.rpm.sh | bash
+yum install -y  git gitlab-ce
+echo "gitlab_rails['initial_root_password'] = 'Example123'" >>/etc/gitlab/gitlab.rb
+gitlab-ctl reconfigure
+EOF
+
+

@@ -1,0 +1,40 @@
+# Start of Vagranfile
+
+
+Vagrant.configure(2) do |config|
+
+  config.vm.define "jenkins" do |conf|
+    conf.vm.box = "centos/7"
+    conf.vm.hostname = 'jenkins.172.24.0.12.nip.io'
+    conf.vm.network "private_network", ip: "172.24.0.12"
+    conf.vm.provider "virtualbox" do |v|
+      v.memory = 2048
+      v.cpus = 2
+    end
+    conf.vm.provision "shell", inline: $inline_script
+    conf.vm.provision "shell", inline: $jenkins
+  end
+
+end
+
+$inline_script = <<SCRIPT
+cat <<EOF > /etc/hosts
+127.0.0.1   localhost localhost.localdomain
+EOF
+SCRIPT
+
+$jenkins = <<EOF
+yum install -y epel-release
+yum install -y git java-1.8.0-openjdk puppet pylint rubygem-rake pytest docker rubygem-puppet-lint
+gem install rspec-puppet rake
+groupadd docker
+curl -o /etc/yum.repos.d/jenkins.repo http://pkg.jenkins-ci.org/redhat/jenkins.repo
+rpm --import https://jenkins-ci.org/redhat/jenkins-ci.org.key
+yum install -y jenkins
+usermod -s /bin/bash -aG docker jenkins
+systemctl enable jenkins
+systemctl start jenkins
+systemctl enable --now docker
+sleep 30
+cat /var/lib/jenkins/secrets/initialAdminPassword
+EOF

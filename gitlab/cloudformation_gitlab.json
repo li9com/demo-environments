@@ -45,8 +45,7 @@
           "#!/bin/bash",
           "yum -y update",
           "curl https://packages.gitlab.com/install/repositories/gitlab/gitlab-ce/script.rpm.sh | bash",
-          "yum install -y git gitlab-ce",
-          "gitlab-ctl reconfigure"
+          "yum install -y git gitlab-ce"
 	      ]]}}
 
         }
