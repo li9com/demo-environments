@@ -1,0 +1,161 @@
+{
+"AWSTemplateFormatVersion": "2010-09-09",
+"Parameters": {
+
+  "KeyName": {
+    "Description": "Name of an existing ec2 KeyPair to enable SSH access",
+    "Type": "AWS::EC2::KeyPair::KeyName",
+    "ConstraintDescription": "Must be the name of an existing EC2 KeyPair"
+  },
+
+  "Image": {
+    "Description": "Image ID",
+    "Type": "String",
+    "MinLength": "3",
+    "Default": "ami-011b3ccf1bd6db744"
+  },
+
+  "Name": {
+    "Description": "Domain tag",
+      "Type": "String",
+      "MinLength": "3",
+      "MaxLength": "12",
+      "Default": "openshift",
+      "AllowedPattern" : "^[a-z][a-z0-9]{2,11}$",
+      "ConstraintDescription": "^[a-z][a-z0-9]{2,11}$"
+  }
+},
+
+"Resources": {
+
+    "Master": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "InstanceType": "t3.large",
+        "Tags": [ {
+          "Key": "Name",
+          "Value": { "Fn::Join": [ ".", [ "master", { "Ref": "Name" }, "demo.li9.com"  ]] }
+        } ],
+        "NetworkInterfaces": [
+          {
+            "GroupSet": [ "sg-e2dd7699" ],
+            "AssociatePublicIpAddress": "true",
+            "DeviceIndex": 0,
+            "DeleteOnTermination": "true",
+            "SubnetId": "subnet-c86b14e2"
+          }
+        ],
+        "KeyName": { "Ref": "KeyName" },
+        "ImageId": { "Ref": "Image" },
+
+        "UserData": { "Fn::Base64" : { "Fn::Join" : ["\n", [
+          "#!/bin/bash",
+          "uptime"
+	      ]]}}
+        }
+    },
+
+    "App1": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "InstanceType": "t3.large",
+        "Tags": [ {
+          "Key": "Name",
+          "Value": { "Fn::Join": [ ".", [ "app1", { "Ref": "Name" }, "demo.li9.com"  ]] }
+        } ],
+        "NetworkInterfaces": [
+          {
+            "GroupSet": [ "sg-e2dd7699" ],
+            "AssociatePublicIpAddress": "true",
+            "DeviceIndex": 0,
+            "DeleteOnTermination": "true",
+            "SubnetId": "subnet-c86b14e2"
+          }
+        ],
+        "KeyName": { "Ref": "KeyName" },
+        "ImageId": { "Ref": "Image" },
+
+        "UserData": { "Fn::Base64" : { "Fn::Join" : ["\n", [
+          "#!/bin/bash",
+          "uptime"
+              ]]}}
+        }
+    },
+
+    "App2": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "InstanceType": "t3.large",
+        "Tags": [ {
+          "Key": "Name",
+          "Value": { "Fn::Join": [ ".", [ "app2", { "Ref": "Name" }, "demo.li9.com"  ]] }
+        } ],
+        "NetworkInterfaces": [
+          {
+            "GroupSet": [ "sg-e2dd7699" ],
+            "AssociatePublicIpAddress": "true",
+            "DeviceIndex": 0,
+            "DeleteOnTermination": "true",
+            "SubnetId": "subnet-c86b14e2"
+          }
+        ],
+        "KeyName": { "Ref": "KeyName" },
+        "ImageId": { "Ref": "Image" },
+
+        "UserData": { "Fn::Base64" : { "Fn::Join" : ["\n", [
+          "#!/bin/bash",
+          "uptime"
+              ]]}}
+        }
+    },
+
+    "DNSZone" : {
+    	"Type" : "AWS::Route53::RecordSet",
+    	"Properties" : {
+      		"HostedZoneId" :  "ZG1LSIRFXEMSJ",
+      		"Comment" : "DNS name for applications",  
+      		"Name" :  { "Fn::Join": [ ".", [ { "Ref": "Name" }, "demo.li9.com"  ]] },
+      		"Type" : "A",
+      		"TTL" : "900",
+		"ResourceRecords" : [ { "Fn::GetAtt" : [ "Master", "PublicIp" ] } ]
+    	}
+    },
+
+    "DNSZoneMaster" : {
+    	"Type" : "AWS::Route53::RecordSet",
+    	"Properties" : {
+      		"HostedZoneId" :  "ZG1LSIRFXEMSJ",
+      		"Comment" : "DNS name for master",  
+      		"Name" :  { "Fn::Join": [ ".", [ "master",{ "Ref": "Name" }, "demo.li9.com"  ]] },
+      		"Type" : "A",
+      		"TTL" : "900",
+		"ResourceRecords" : [ { "Fn::GetAtt" : [ "Master", "PublicIp" ] } ]
+    	}
+    },
+
+    "DNSZoneApp1" : {
+    	"Type" : "AWS::Route53::RecordSet",
+    	"Properties" : {
+      		"HostedZoneId" :  "ZG1LSIRFXEMSJ",
+      		"Comment" : "DNS name app1",  
+      		"Name" :  { "Fn::Join": [ ".", [ "app1",{ "Ref": "Name" }, "demo.li9.com"  ]] },
+      		"Type" : "A",
+      		"TTL" : "900",
+		"ResourceRecords" : [ { "Fn::GetAtt" : [ "App1", "PublicIp" ] } ]
+    	}
+    },
+
+    "DNSZoneApp2" : {
+    	"Type" : "AWS::Route53::RecordSet",
+    	"Properties" : {
+      		"HostedZoneId" :  "ZG1LSIRFXEMSJ",
+      		"Comment" : "DNS name for app2",  
+      		"Name" :  { "Fn::Join": [ ".", [ "app2",{ "Ref": "Name" }, "demo.li9.com"  ]] },
+      		"Type" : "A",
+      		"TTL" : "900",
+		"ResourceRecords" : [ { "Fn::GetAtt" : [ "App2", "PublicIp" ] } ]
+    	}
+    }
+
+}
+}
