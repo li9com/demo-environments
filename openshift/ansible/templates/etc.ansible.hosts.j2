@@ -7,10 +7,10 @@ etcd
 ansible_ssh_user=root
 #ansible_become=true
 openshift_deployment_type=openshift-enterprise
-oreg_url=registry.redhat.io/openshift3/ose-${component}:${version}
+#oreg_url=registry.redhat.io/openshift3/ose-${component}:${version}
 oreg_auth_user={{redhat_username}}
 oreg_auth_password={{redhat_password}}
-openshift_examples_modify_imagestreams=true
+#openshift_examples_modify_imagestreams=true
 openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 'challenge': 'true', 'kind': 'HTPasswdPasswordIdentityProvider'}]
 #openshift_disable_check=docker_image_availability
 openshift_enable_origin_repo=false

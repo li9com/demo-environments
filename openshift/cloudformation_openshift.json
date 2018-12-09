@@ -144,7 +144,7 @@
     	"Properties" : {
       		"HostedZoneId" :  "ZG1LSIRFXEMSJ",
       		"Comment" : "DNS name for applications",  
-      		"Name" :  { "Fn::Join": [ ".", [ "*", { "Ref": "Name" }, "demo.li9.com"  ]] },
+      		"Name" :  { "Fn::Join": [ ".", [ "*.apps", { "Ref": "Name" }, "demo.li9.com"  ]] },
       		"Type" : "A",
       		"TTL" : "900",
 		"ResourceRecords" : [ { "Fn::GetAtt" : [ "Master", "PublicIp" ] } ]
