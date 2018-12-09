@@ -31,7 +31,7 @@
     "Master": {
       "Type": "AWS::EC2::Instance",
       "Properties": {
-        "InstanceType": "t3.large",
+        "InstanceType": "t2.xlarge",
         "Tags": [ {
           "Key": "Name",
           "Value": { "Fn::Join": [ ".", [ "master", { "Ref": "Name" }, "demo.li9.com"  ]] }
@@ -48,6 +48,16 @@
         "KeyName": { "Ref": "KeyName" },
         "ImageId": { "Ref": "Image" },
 
+         "BlockDeviceMappings": [
+          {
+            "DeviceName": "/dev/sda1",
+            "Ebs": {
+              "DeleteOnTermination": "true",
+              "VolumeSize": "30"
+            }
+          }
+         ],
+
         "UserData": { "Fn::Base64" : { "Fn::Join" : ["\n", [
           "#!/bin/bash",
           "uptime"
@@ -58,7 +68,7 @@
     "App1": {
       "Type": "AWS::EC2::Instance",
       "Properties": {
-        "InstanceType": "t3.large",
+        "InstanceType": "t2.xlarge",
         "Tags": [ {
           "Key": "Name",
           "Value": { "Fn::Join": [ ".", [ "app1", { "Ref": "Name" }, "demo.li9.com"  ]] }
@@ -75,6 +85,16 @@
         "KeyName": { "Ref": "KeyName" },
         "ImageId": { "Ref": "Image" },
 
+         "BlockDeviceMappings": [
+          {
+            "DeviceName": "/dev/sda1",
+            "Ebs": {
+              "DeleteOnTermination": "true",
+              "VolumeSize": "30"
+            }
+          }
+         ],
+
         "UserData": { "Fn::Base64" : { "Fn::Join" : ["\n", [
           "#!/bin/bash",
           "uptime"
@@ -85,7 +105,7 @@
     "App2": {
       "Type": "AWS::EC2::Instance",
       "Properties": {
-        "InstanceType": "t3.large",
+        "InstanceType": "t2.xlarge",
         "Tags": [ {
           "Key": "Name",
           "Value": { "Fn::Join": [ ".", [ "app2", { "Ref": "Name" }, "demo.li9.com"  ]] }
@@ -102,6 +122,16 @@
         "KeyName": { "Ref": "KeyName" },
         "ImageId": { "Ref": "Image" },
 
+         "BlockDeviceMappings": [
+          {
+            "DeviceName": "/dev/sda1",
+            "Ebs": {
+              "DeleteOnTermination": "true",
+              "VolumeSize": "30"
+            }
+          }
+         ],
+
         "UserData": { "Fn::Base64" : { "Fn::Join" : ["\n", [
           "#!/bin/bash",
           "uptime"
@@ -109,12 +139,12 @@
         }
     },
 
-    "DNSZone" : {
+    "DNSAny" : {
     	"Type" : "AWS::Route53::RecordSet",
     	"Properties" : {
       		"HostedZoneId" :  "ZG1LSIRFXEMSJ",
       		"Comment" : "DNS name for applications",  
-      		"Name" :  { "Fn::Join": [ ".", [ { "Ref": "Name" }, "demo.li9.com"  ]] },
+      		"Name" :  { "Fn::Join": [ ".", [ "*", { "Ref": "Name" }, "demo.li9.com"  ]] },
       		"Type" : "A",
       		"TTL" : "900",
 		"ResourceRecords" : [ { "Fn::GetAtt" : [ "Master", "PublicIp" ] } ]

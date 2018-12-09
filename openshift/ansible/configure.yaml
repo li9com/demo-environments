@@ -61,8 +61,11 @@
       --enable="rhel-7-server-ose-3.11-rpms"
       --enable="rhel-7-server-ansible-2.6-rpms"
 
-  - name: Install docker
-    yum: name=docker state=latest
+  - name: Install docker and supporting packages
+    yum: name={{item}} state=latest
+    with_items:
+    - docker
+    - skopeo
 
   - name: Start and enable docker
     service: name=docker state=started enabled=true
@@ -74,10 +77,43 @@
   - vars.yaml
   tasks:
 
+
   - name: Install openshift-ansible
     yum: name=openshift-ansible state=latest
 
   - name: Copy ansible inventory
     template: src=templates/etc.ansible.hosts.j2 dest=/etc/ansible/hosts
+
+  - name: Configure ansible.cfg
+    template: src=templates/ansible.cfg.j2 dest=/etc/ansible/ansible.cfg
+
+  - name: Check if SSH key exists
+    stat: path=/root/.ssh/id_rsa
+    register: stat_id_rsa
+
+  - name: Generate new SSH key
+    command: ssh-keygen -t rsa -N "" -f /root/.ssh/id_rsa
+    when: stat_id_rsa.stat.exists == False 
+
+  - name: Save public key
+    command: cat /root/.ssh/id_rsa.pub
+    register: ssh_public_key
+
+  - name: Show public key
+    debug: var=ssh_public_key.stdout
+
+  - name: Save public key
+    add_host:
+      name: keydata
+      ssh_public_key: "{{ssh_public_key.stdout}}"
+
+- hosts: openshift
+  become: true
+  gather_facts: false
+  tasks:
+
+  - name: Configure ssh authorized keys
+    copy: dest=/root/.ssh/authorized_keys content="{{ hostvars['keydata']['ssh_public_key']}}"
+
 
 
