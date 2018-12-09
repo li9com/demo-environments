@@ -10,10 +10,15 @@
 
 - hosts: openshift
   become: true
-  gather_facts: false
+  gather_facts: true
   vars_files:
   - vars.yaml
   tasks:
+
+  - set_fact:
+      master: "master.{{id}}.demo.li9.com"
+      app1:   "app1.{{id}}.demo.li9.com"
+      app2:   "app2.{{id}}.demo.li9.com"
 
   - name: Change /etc/hosts
     template: src=templates/etc.hosts.j2 dest=/etc/hosts
