@@ -15,6 +15,9 @@
   - vars.yaml
   tasks:
 
+  - name: Change /etc/hosts
+    template: src=templates/etc.hosts.j2 dest=/etc/hosts
+
   - name: Install required packages
     yum: name={{item}} state=latest
     with_items:

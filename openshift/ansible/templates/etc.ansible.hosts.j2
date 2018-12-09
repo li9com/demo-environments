@@ -15,11 +15,12 @@ openshift_master_identity_providers=[{'name': 'htpasswd_auth', 'login': 'true', 
 #openshift_disable_check=docker_image_availability
 openshift_enable_origin_repo=false
 openshift_release="v3.11"
-openshift_master_default_subdomain={{id}}.demo.li9.com
+openshift_master_default_subdomain=apps.{{id}}.demo.li9.com
 openshift_metrics_install_metrics=false
 openshift_metrics_server_install=false
 openshift_cluster_monitoring_operator_install=false
 openshift_disable_check=docker_image_availability,disk_availability,memory_availability,docker_storage
+openshift_master_identity_providers=[{'name': 'li9_ldap', 'challenge': 'true', 'login': 'true', 'kind': 'LDAPPasswordIdentityProvider', 'mappingMethod': 'claim', 'attributes': {'id': ['dn'], 'email': ['mail'], 'name': ['cn'], 'preferredUsername': ['uid']}, 'insecure': 'true', 'bindDN': 'uid=openshift_bind,cn=users,cn=accounts,dc=li9,dc=com', 'bindPassword': '{{ldap_password}}', 'url': 'ldap://idm.demo.li9.com/cn=users,cn=accounts,dc=li9,dc=com?uid'}]
 
 
 
