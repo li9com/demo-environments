@@ -5,17 +5,28 @@
     "KeyName": {
         "Description": "Name of an existing ec2 KeyPair to enable SSH access",
         "Type": "AWS::EC2::KeyPair::KeyName",
+        "Default": "akropachev",
         "ConstraintDescription": "Must be the name of an existing EC2 KeyPair"
     },
     "Name": {
         "Description": "Server short name",
         "Type": "String",
+        "MinLength": "2",
+        "MaxLength": "12",
+        "Default": "node",
+        "AllowedPattern" : "^[a-z][a-z0-9]{2,11}$",
+        "ConstraintDescription": "^[a-z][a-z0-9]{2,11}$"
+    },
+    "UserName": {
+        "Description": "User to be created",
+        "Type": "String",
         "MinLength": "3",
         "MaxLength": "12",
-        "Default": "docker",
+        "Default": "student",
         "AllowedPattern" : "^[a-z][a-z0-9]{2,11}$",
         "ConstraintDescription": "^[a-z][a-z0-9]{2,11}$"
     }
+
 },
 
 
@@ -46,8 +57,13 @@
           "yum install -y epel-release",
           "yum install -y docker",
           "groupadd docker",
-          "usermod -s /bin/bash -aG docker vagrant",
-          "systemctl enable --now docker"
+          { "Fn::Join": [ " ", [ "useradd", { "Ref": "UserName" } ]] },
+          { "Fn::Join": [ " ", [ "echo", { "Ref": "UserName" }, "| passwd --stdin", { "Ref": "UserName" } ]] },
+          { "Fn::Join": [ " ", [ "echo", { "Ref": "UserName" }, "| passwd --stdin ec2-user" ]] },
+          "sed -ie 's/^PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config",
+          { "Fn::Join": [ "", [ "usermod -s /bin/bash -aG docker ", { "Ref": "UserName" } ]] },
+          "systemctl enable --now docker",
+          "systemctl restart sshd"
 	      ]]}}
 
         }
