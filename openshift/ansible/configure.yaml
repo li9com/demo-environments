@@ -7,6 +7,7 @@
   - add_host: name="master.{{ id }}.demo.li9.com" groups=openshift ansible_user=ec2-user
   - add_host: name="app1.{{ id }}.demo.li9.com" groups=openshift ansible_user=ec2-user
   - add_host: name="app2.{{ id }}.demo.li9.com" groups=openshift ansible_user=ec2-user
+  - add_host: name="app3.{{ id }}.demo.li9.com" groups=openshift ansible_user=ec2-user
 
 - hosts: openshift
   become: true
@@ -19,6 +20,7 @@
       master: "master.{{id}}.demo.li9.com"
       app1:   "app1.{{id}}.demo.li9.com"
       app2:   "app2.{{id}}.demo.li9.com"
+      app3:   "app3.{{id}}.demo.li9.com"
 
   - name: Change /etc/hosts
     template: src=templates/etc.hosts.j2 dest=/etc/hosts
@@ -50,10 +52,13 @@
   - name: Register on redhat
     redhat_subscription:
       state: present
+      force_register: true
       username: "{{redhat_username}}"
       password: "{{redhat_password}}"
       pool_ids:
-        - 8a85f98c6096a56d0160981ff96615c1
+        - 8a85f98c64f60ed201650f9c43ce7884
+#        - 8a85f99c6901e22401692c93045806e9
+#        - 8a85f98c6096a56d0160981ff96615c1
 
   - name: Disable repos
     command: subscription-manager repos --disable="*"

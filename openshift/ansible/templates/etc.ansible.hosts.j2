@@ -23,6 +23,17 @@ openshift_disable_check=docker_image_availability,disk_availability,memory_avail
 openshift_master_identity_providers=[{'name': 'li9_ldap', 'challenge': 'true', 'login': 'true', 'kind': 'LDAPPasswordIdentityProvider', 'mappingMethod': 'claim', 'attributes': {'id': ['dn'], 'email': ['mail'], 'name': ['cn'], 'preferredUsername': ['uid']}, 'insecure': 'true', 'bindDN': 'uid=openshift_bind,cn=users,cn=accounts,dc=li9,dc=com', 'bindPassword': '{{ldap_password}}', 'url': 'ldap://idm.demo.li9.com/cn=users,cn=accounts,dc=li9,dc=com?uid'}]
 
 
+openshift_storage_glusterfs_namespace=app-storage
+openshift_storage_glusterfs_storageclass=true
+openshift_storage_glusterfs_storageclass_default=true
+openshift_storage_glusterfs_block_deploy=true
+openshift_storage_glusterfs_block_host_vol_size=10
+openshift_storage_glusterfs_block_storageclass=true
+openshift_storage_glusterfs_block_storageclass_default=false
+openshift_storage_glusterfs_image=registry.redhat.io/rhgs3/rhgs-server-rhel7:v3.11
+openshift_storage_glusterfs_block_image=registry.redhat.io/rhgs3/rhgs-gluster-block-prov-rhel7:v3.11
+openshift_storage_glusterfs_heketi_image=registry.redhat.io/rhgs3/rhgs-volmanager-rhel7:v3.11
+
 
 [masters]
 master.{{id}}.demo.li9.com
@@ -34,3 +45,9 @@ master.{{id}}.demo.li9.com
 master.{{id}}.demo.li9.com openshift_node_group_name='node-config-master-infra'
 app1.{{id}}.demo.li9.com   openshift_node_group_name='node-config-compute'
 app2.{{id}}.demo.li9.com   openshift_node_group_name='node-config-compute'
+app3.{{id}}.demo.li9.com   openshift_node_group_name='node-config-compute'
+
+[glusterfs]
+app1.{{id}}.demo.li9.com glusterfs_devices='[ "/dev/xvdb" ]'
+app2.{{id}}.demo.li9.com glusterfs_devices='[ "/dev/xvdb" ]'
+app3.{{id}}.demo.li9.com glusterfs_devices='[ "/dev/xvdb" ]'

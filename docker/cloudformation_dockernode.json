@@ -54,15 +54,18 @@
 
         "UserData": { "Fn::Base64" : { "Fn::Join" : ["\n", [
           "#!/bin/bash",
-          "yum install -y epel-release",
+          "yum install -y epel-release git",
           "yum install -y docker",
           "groupadd docker",
           { "Fn::Join": [ " ", [ "useradd", { "Ref": "UserName" } ]] },
           { "Fn::Join": [ " ", [ "echo", { "Ref": "UserName" }, "| passwd --stdin", { "Ref": "UserName" } ]] },
-          { "Fn::Join": [ " ", [ "echo", { "Ref": "UserName" }, "| passwd --stdin ec2-user" ]] },
           "sed -ie 's/^PasswordAuthentication no/PasswordAuthentication yes/g' /etc/ssh/sshd_config",
           { "Fn::Join": [ "", [ "usermod -s /bin/bash -aG docker ", { "Ref": "UserName" } ]] },
           "systemctl enable --now docker",
+          { "Fn::Join": [ "", [  "echo '",{ "Ref": "UserName" }," ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/student" ]] },
+          "cd  /home",
+          "git clone https://github.com/li9com/learn-docker.git",
+          { "Fn::Join": [ " ", [ "chown -R ", { "Ref": "UserName" }, "/home/learn-docker" ]] },
           "systemctl restart sshd"
 	      ]]}}
 

@@ -1,191 +1,461 @@
 {
-"AWSTemplateFormatVersion": "2010-09-09",
-"Parameters": {
-
-  "KeyName": {
-    "Description": "Name of an existing ec2 KeyPair to enable SSH access",
-    "Type": "AWS::EC2::KeyPair::KeyName",
-    "ConstraintDescription": "Must be the name of an existing EC2 KeyPair"
-  },
-
-  "Image": {
-    "Description": "Image ID",
-    "Type": "String",
-    "MinLength": "3",
-    "Default": "ami-011b3ccf1bd6db744"
-  },
-
-  "Name": {
-    "Description": "Domain tag",
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Parameters": {
+    "KeyName": {
+      "Description": "Name of an existing ec2 KeyPair to enable SSH access",
+      "Type": "AWS::EC2::KeyPair::KeyName",
+      "ConstraintDescription": "Must be the name of an existing EC2 KeyPair"
+    },
+    "Image": {
+      "Description": "Image ID",
       "Type": "String",
       "MinLength": "3",
+      "Default": "ami-011b3ccf1bd6db744"
+    },
+    "RootDiskSize": {
+      "Description": "Size of the root disk",
+      "Type": "Number",
+      "Default": "20",
+      "MinValue": "10",
+      "MaxValue": "40"
+    },
+    "GlusterDiskSize": {
+      "Description": "Gluster storage disk size",
+      "Type": "Number",
+      "Default": "10",
+      "MinValue": "5",
+      "MaxValue": "50"
+    },
+    "Name": {
+      "Description": "Domain tag",
+      "Type": "String",
+      "MinLength": "2",
       "MaxLength": "12",
       "Default": "openshift",
-      "AllowedPattern" : "^[a-z][a-z0-9]{2,11}$",
+      "AllowedPattern": "^[a-z][a-z0-9]{1,11}$",
       "ConstraintDescription": "^[a-z][a-z0-9]{2,11}$"
-  }
-},
-
-"Resources": {
-
+    }
+  },
+  "Resources": {
     "Master": {
       "Type": "AWS::EC2::Instance",
       "Properties": {
-        "InstanceType": "t2.xlarge",
-        "Tags": [ {
-          "Key": "Name",
-          "Value": { "Fn::Join": [ ".", [ "master", { "Ref": "Name" }, "demo.li9.com"  ]] }
-        } ],
+        "InstanceType": "t2.large",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                ".",
+                [
+                  "master",
+                  {
+                    "Ref": "Name"
+                  },
+                  "demo.li9.com"
+                ]
+              ]
+            }
+          }
+        ],
         "NetworkInterfaces": [
           {
-            "GroupSet": [ "sg-e2dd7699" ],
+            "GroupSet": [
+              "sg-e2dd7699"
+            ],
             "AssociatePublicIpAddress": "true",
             "DeviceIndex": 0,
             "DeleteOnTermination": "true",
             "SubnetId": "subnet-c86b14e2"
           }
         ],
-        "KeyName": { "Ref": "KeyName" },
-        "ImageId": { "Ref": "Image" },
-
-         "BlockDeviceMappings": [
+        "KeyName": {
+          "Ref": "KeyName"
+        },
+        "ImageId": {
+          "Ref": "Image"
+        },
+        "BlockDeviceMappings": [
           {
             "DeviceName": "/dev/sda1",
             "Ebs": {
               "DeleteOnTermination": "true",
-              "VolumeSize": "30"
+              "VolumeSize": {
+                "Ref": "RootDiskSize"
+              }
             }
           }
-         ],
-
-        "UserData": { "Fn::Base64" : { "Fn::Join" : ["\n", [
-          "#!/bin/bash",
-          "uptime"
-	      ]]}}
+        ],
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "\n",
+              [
+                "#!/bin/bash",
+                "uptime"
+              ]
+            ]
+          }
         }
+      }
     },
-
     "App1": {
       "Type": "AWS::EC2::Instance",
       "Properties": {
-        "InstanceType": "t2.xlarge",
-        "Tags": [ {
-          "Key": "Name",
-          "Value": { "Fn::Join": [ ".", [ "app1", { "Ref": "Name" }, "demo.li9.com"  ]] }
-        } ],
+        "InstanceType": "t2.large",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                ".",
+                [
+                  "app1",
+                  {
+                    "Ref": "Name"
+                  },
+                  "demo.li9.com"
+                ]
+              ]
+            }
+          }
+        ],
         "NetworkInterfaces": [
           {
-            "GroupSet": [ "sg-e2dd7699" ],
+            "GroupSet": [
+              "sg-e2dd7699"
+            ],
             "AssociatePublicIpAddress": "true",
             "DeviceIndex": 0,
             "DeleteOnTermination": "true",
             "SubnetId": "subnet-c86b14e2"
           }
         ],
-        "KeyName": { "Ref": "KeyName" },
-        "ImageId": { "Ref": "Image" },
-
-         "BlockDeviceMappings": [
+        "KeyName": {
+          "Ref": "KeyName"
+        },
+        "ImageId": {
+          "Ref": "Image"
+        },
+        "BlockDeviceMappings": [
           {
             "DeviceName": "/dev/sda1",
             "Ebs": {
               "DeleteOnTermination": "true",
-              "VolumeSize": "30"
+              "VolumeSize": {
+                "Ref": "RootDiskSize"
+              }
+            }
+          },
+          {
+            "DeviceName": "/dev/sdb",
+            "Ebs": {
+              "DeleteOnTermination": "true",
+              "VolumeSize": {
+                "Ref": "GlusterDiskSize"
+              }
             }
           }
-         ],
-
-        "UserData": { "Fn::Base64" : { "Fn::Join" : ["\n", [
-          "#!/bin/bash",
-          "uptime"
-              ]]}}
+        ],
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "\n",
+              [
+                "#!/bin/bash",
+                "uptime"
+              ]
+            ]
+          }
         }
+      }
     },
-
     "App2": {
       "Type": "AWS::EC2::Instance",
       "Properties": {
-        "InstanceType": "t2.xlarge",
-        "Tags": [ {
-          "Key": "Name",
-          "Value": { "Fn::Join": [ ".", [ "app2", { "Ref": "Name" }, "demo.li9.com"  ]] }
-        } ],
+        "InstanceType": "t2.large",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                ".",
+                [
+                  "app2",
+                  {
+                    "Ref": "Name"
+                  },
+                  "demo.li9.com"
+                ]
+              ]
+            }
+          }
+        ],
         "NetworkInterfaces": [
           {
-            "GroupSet": [ "sg-e2dd7699" ],
+            "GroupSet": [
+              "sg-e2dd7699"
+            ],
             "AssociatePublicIpAddress": "true",
             "DeviceIndex": 0,
             "DeleteOnTermination": "true",
             "SubnetId": "subnet-c86b14e2"
           }
         ],
-        "KeyName": { "Ref": "KeyName" },
-        "ImageId": { "Ref": "Image" },
-
-         "BlockDeviceMappings": [
+        "KeyName": {
+          "Ref": "KeyName"
+        },
+        "ImageId": {
+          "Ref": "Image"
+        },
+        "BlockDeviceMappings": [
           {
             "DeviceName": "/dev/sda1",
             "Ebs": {
               "DeleteOnTermination": "true",
-              "VolumeSize": "30"
+              "VolumeSize": {
+                "Ref": "RootDiskSize"
+              }
+            }
+          },
+          {
+            "DeviceName": "/dev/sdb",
+            "Ebs": {
+              "DeleteOnTermination": "true",
+              "VolumeSize": {
+                "Ref": "GlusterDiskSize"
+              }
             }
           }
-         ],
-
-        "UserData": { "Fn::Base64" : { "Fn::Join" : ["\n", [
-          "#!/bin/bash",
-          "uptime"
-              ]]}}
+        ],
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "\n",
+              [
+                "#!/bin/bash",
+                "uptime"
+              ]
+            ]
+          }
         }
+      }
     },
-
-    "DNSAny" : {
-    	"Type" : "AWS::Route53::RecordSet",
-    	"Properties" : {
-      		"HostedZoneId" :  "ZG1LSIRFXEMSJ",
-      		"Comment" : "DNS name for applications",  
-      		"Name" :  { "Fn::Join": [ ".", [ "*.apps", { "Ref": "Name" }, "demo.li9.com"  ]] },
-      		"Type" : "A",
-      		"TTL" : "900",
-		"ResourceRecords" : [ { "Fn::GetAtt" : [ "Master", "PublicIp" ] } ]
-    	}
+    "App3": {
+      "Type": "AWS::EC2::Instance",
+      "Properties": {
+        "InstanceType": "t2.large",
+        "Tags": [
+          {
+            "Key": "Name",
+            "Value": {
+              "Fn::Join": [
+                ".",
+                [
+                  "app3",
+                  {
+                    "Ref": "Name"
+                  },
+                  "demo.li9.com"
+                ]
+              ]
+            }
+          }
+        ],
+        "NetworkInterfaces": [
+          {
+            "GroupSet": [
+              "sg-e2dd7699"
+            ],
+            "AssociatePublicIpAddress": "true",
+            "DeviceIndex": 0,
+            "DeleteOnTermination": "true",
+            "SubnetId": "subnet-c86b14e2"
+          }
+        ],
+        "KeyName": {
+          "Ref": "KeyName"
+        },
+        "ImageId": {
+          "Ref": "Image"
+        },
+        "BlockDeviceMappings": [
+          {
+            "DeviceName": "/dev/sda1",
+            "Ebs": {
+              "DeleteOnTermination": "true",
+              "VolumeSize": {
+                "Ref": "RootDiskSize"
+              }
+            }
+          },
+          {
+            "DeviceName": "/dev/sdb",
+            "Ebs": {
+              "DeleteOnTermination": "true",
+              "VolumeSize": {
+                "Ref": "GlusterDiskSize"
+              }
+            }
+          }
+        ],
+        "UserData": {
+          "Fn::Base64": {
+            "Fn::Join": [
+              "\n",
+              [
+                "#!/bin/bash",
+                "uptime"
+              ]
+            ]
+          }
+        }
+      }
     },
-
-    "DNSZoneMaster" : {
-    	"Type" : "AWS::Route53::RecordSet",
-    	"Properties" : {
-      		"HostedZoneId" :  "ZG1LSIRFXEMSJ",
-      		"Comment" : "DNS name for master",  
-      		"Name" :  { "Fn::Join": [ ".", [ "master",{ "Ref": "Name" }, "demo.li9.com"  ]] },
-      		"Type" : "A",
-      		"TTL" : "900",
-		"ResourceRecords" : [ { "Fn::GetAtt" : [ "Master", "PublicIp" ] } ]
-    	}
+    "DNSAny": {
+      "Type": "AWS::Route53::RecordSet",
+      "Properties": {
+        "HostedZoneId": "ZG1LSIRFXEMSJ",
+        "Comment": "DNS name for applications",
+        "Name": {
+          "Fn::Join": [
+            ".",
+            [
+              "*.apps",
+              {
+                "Ref": "Name"
+              },
+              "demo.li9.com"
+            ]
+          ]
+        },
+        "Type": "A",
+        "TTL": "900",
+        "ResourceRecords": [
+          {
+            "Fn::GetAtt": [
+              "Master",
+              "PublicIp"
+            ]
+          }
+        ]
+      }
     },
-
-    "DNSZoneApp1" : {
-    	"Type" : "AWS::Route53::RecordSet",
-    	"Properties" : {
-      		"HostedZoneId" :  "ZG1LSIRFXEMSJ",
-      		"Comment" : "DNS name app1",  
-      		"Name" :  { "Fn::Join": [ ".", [ "app1",{ "Ref": "Name" }, "demo.li9.com"  ]] },
-      		"Type" : "A",
-      		"TTL" : "900",
-		"ResourceRecords" : [ { "Fn::GetAtt" : [ "App1", "PublicIp" ] } ]
-    	}
+    "DNSZoneMaster": {
+      "Type": "AWS::Route53::RecordSet",
+      "Properties": {
+        "HostedZoneId": "ZG1LSIRFXEMSJ",
+        "Comment": "DNS name for master",
+        "Name": {
+          "Fn::Join": [
+            ".",
+            [
+              "master",
+              {
+                "Ref": "Name"
+              },
+              "demo.li9.com"
+            ]
+          ]
+        },
+        "Type": "A",
+        "TTL": "900",
+        "ResourceRecords": [
+          {
+            "Fn::GetAtt": [
+              "Master",
+              "PublicIp"
+            ]
+          }
+        ]
+      }
     },
-
-    "DNSZoneApp2" : {
-    	"Type" : "AWS::Route53::RecordSet",
-    	"Properties" : {
-      		"HostedZoneId" :  "ZG1LSIRFXEMSJ",
-      		"Comment" : "DNS name for app2",  
-      		"Name" :  { "Fn::Join": [ ".", [ "app2",{ "Ref": "Name" }, "demo.li9.com"  ]] },
-      		"Type" : "A",
-      		"TTL" : "900",
-		"ResourceRecords" : [ { "Fn::GetAtt" : [ "App2", "PublicIp" ] } ]
-    	}
+    "DNSZoneApp1": {
+      "Type": "AWS::Route53::RecordSet",
+      "Properties": {
+        "HostedZoneId": "ZG1LSIRFXEMSJ",
+        "Comment": "DNS name app1",
+        "Name": {
+          "Fn::Join": [
+            ".",
+            [
+              "app1",
+              {
+                "Ref": "Name"
+              },
+              "demo.li9.com"
+            ]
+          ]
+        },
+        "Type": "A",
+        "TTL": "900",
+        "ResourceRecords": [
+          {
+            "Fn::GetAtt": [
+              "App1",
+              "PublicIp"
+            ]
+          }
+        ]
+      }
+    },
+    "DNSZoneApp2": {
+      "Type": "AWS::Route53::RecordSet",
+      "Properties": {
+        "HostedZoneId": "ZG1LSIRFXEMSJ",
+        "Comment": "DNS name for app2",
+        "Name": {
+          "Fn::Join": [
+            ".",
+            [
+              "app2",
+              {
+                "Ref": "Name"
+              },
+              "demo.li9.com"
+            ]
+          ]
+        },
+        "Type": "A",
+        "TTL": "900",
+        "ResourceRecords": [
+          {
+            "Fn::GetAtt": [
+              "App2",
+              "PublicIp"
+            ]
+          }
+        ]
+      }
+    },
+    "DNSZoneApp3": {
+      "Type": "AWS::Route53::RecordSet",
+      "Properties": {
+        "HostedZoneId": "ZG1LSIRFXEMSJ",
+        "Comment": "DNS name for app2",
+        "Name": {
+          "Fn::Join": [
+            ".",
+            [
+              "app3",
+              {
+                "Ref": "Name"
+              },
+              "demo.li9.com"
+            ]
+          ]
+        },
+        "Type": "A",
+        "TTL": "900",
+        "ResourceRecords": [
+          {
+            "Fn::GetAtt": [
+              "App3",
+              "PublicIp"
+            ]
+          }
+        ]
+      }
     }
-
-}
+  }
 }
